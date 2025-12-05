@@ -91,7 +91,8 @@ impl Workspace {
       .filter_map(|container| container.as_window_container().ok())
       .filter_map(|window| {
         let native = window.native();
-        // Try to get process name and title, skip if there's an error
+        // Extract process name and title. If either fails to retrieve,
+        // skip this window by returning None.
         match (native.process_name(), native.title()) {
           (Ok(process_name), Ok(title)) => Some(WorkspaceWindowDto {
             process_name,
