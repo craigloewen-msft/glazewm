@@ -10,6 +10,9 @@ use crate::TilingDirection;
 pub struct WorkspaceWindowDto {
   pub process_name: String,
   pub title: String,
+  /// Base64-encoded PNG icon data (data URL format)
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub icon: Option<String>,
 }
 
 /// User-friendly representation of a workspace.

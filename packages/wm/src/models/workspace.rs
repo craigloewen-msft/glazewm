@@ -91,13 +91,17 @@ impl Workspace {
       .filter_map(|container| container.as_window_container().ok())
       .filter_map(|window| {
         let native = window.native();
-        // Extract process name and title. If either fails to retrieve,
+        // Extract process name, title, and icon. If process_name or title fails,
         // skip this window by returning None.
         match (native.process_name(), native.title()) {
-          (Ok(process_name), Ok(title)) => Some(WorkspaceWindowDto {
-            process_name,
-            title,
-          }),
+          (Ok(process_name), Ok(title)) => {
+            let icon = native.icon_as_data_url();
+            Some(WorkspaceWindowDto {
+              process_name,
+              title,
+              icon,
+            })
+          },
           _ => None,
         }
       })
