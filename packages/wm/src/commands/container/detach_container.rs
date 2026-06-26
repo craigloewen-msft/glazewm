@@ -86,3 +86,66 @@ pub fn detach_container(
 
   Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+  use wm_common::TilingStrategy;
+
+  use super::detach_container;
+  use crate::{
+    commands::container::attach_container,
+    models::{TilingWindow, Workspace},
+    traits::{CommonGetters, TilingSizeGetters},
+  };
+
+  #[test]
+  fn masterstack_close_returns_to_even_split() {
+    let strategy = TilingStrategy::MasterStack;
+    let workspace = Workspace::mock().call();
+
+    // Insert window A (100%).
+    let a = TilingWindow::mock().call();
+    attach_container(
+      &a.clone().into(),
+      &workspace.clone().into(),
+      None,
+      &strategy,
+    )
+    .unwrap();
+
+    // Insert window B (50% | 50%).
+    let b = TilingWindow::mock().call();
+    attach_container(
+      &b.clone().into(),
+      &workspace.clone().into(),
+      None,
+      &strategy,
+    )
+    .unwrap();
+
+    // Insert window C (50% | 25% | 25%).
+    let c = TilingWindow::mock().call();
+    attach_container(
+      &c.clone().into(),
+      &workspace.clone().into(),
+      None,
+      &strategy,
+    )
+    .unwrap();
+
+    let sizes: Vec<f32> = workspace
+      .tiling_children()
+      .map(|child| child.tiling_size())
+      .collect();
+    assert_eq!(sizes, vec![0.5, 0.25, 0.25], "after inserting 3rd window");
+
+    // Close window C -> should return to 50% | 50%.
+    detach_container(c.into(), &strategy).unwrap();
+
+    let sizes: Vec<f32> = workspace
+      .tiling_children()
+      .map(|child| child.tiling_size())
+      .collect();
+    assert_eq!(sizes, vec![0.5, 0.5], "after closing 3rd window");
+  }
+}
